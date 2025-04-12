@@ -5,7 +5,7 @@ import HkdfTestData.example1MasterKey
 import HkdfTestData.example1NumKeys
 import HkdfTestData.example1Salt
 import HkdfTestData.expectedHexKeys1
-import com.gtw.bambufilamentloader.data.Hkdf
+import com.gtw.filamentmanager.data.Hkdf
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith

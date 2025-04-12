@@ -8,11 +8,11 @@ plugins {
 }
 
 android {
-    namespace = "com.gtw.bambufilamentloader"
+    namespace = "com.gtw.filamentmanager"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.gtw.bambufilamentloader"
+        applicationId = "com.gtw.filamentmanager"
         minSdk = 35
         targetSdk = 35
         versionCode = 1
@@ -23,12 +23,19 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
         }
+
+        debug {
+            isMinifyEnabled = false
+            isShrinkResources = false
+        }
+
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -53,7 +60,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-//    implementation(libs.androidx.material3.icons.extended)
+    implementation(libs.androidx.material3.icons.extended)
     implementation(libs.kotlinx.datetime)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.startup.runtime)
