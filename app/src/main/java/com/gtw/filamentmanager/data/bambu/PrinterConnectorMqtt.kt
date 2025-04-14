@@ -21,15 +21,19 @@ import com.gtw.filamentmanager.model.domain.SpooledFilamentTray
 import com.gtw.filamentmanager.model.domain.TrayLocation
 import com.gtw.filamentmanager.model.repos.BambuPrinterEvent
 import com.gtw.filamentmanager.model.repos.ConnectedPrinter
+import com.gtw.filamentmanager.model.repos.ConnectionException
 import com.gtw.filamentmanager.model.repos.FilamentTraysUpdate
 import com.gtw.filamentmanager.model.repos.FilamentTraysUpdateError
+import com.gtw.filamentmanager.model.repos.NotAuthorizedException
 import com.gtw.filamentmanager.model.repos.PrinterConnector
 import com.gtw.filamentmanager.model.repos.PrinterDisconnected
 import com.hivemq.client.mqtt.MqttClientSslConfig
 import com.hivemq.client.mqtt.datatypes.MqttQos
 import com.hivemq.client.mqtt.mqtt3.Mqtt3Client
 import com.hivemq.client.mqtt.mqtt3.Mqtt3ClientBuilder
+import com.hivemq.client.mqtt.mqtt3.exceptions.Mqtt3ConnAckException
 import com.hivemq.client.mqtt.mqtt3.message.auth.Mqtt3SimpleAuth
+import com.hivemq.client.mqtt.mqtt3.message.connect.connack.Mqtt3ConnAckReturnCode
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -230,7 +234,18 @@ class ConnectedPrinterMqtt(
             }
         }
 
-        mqttClient.connect().await()
+        try {
+            mqttClient.connect().await()
+        } catch (e: Mqtt3ConnAckException) {
+            when (e.mqttMessage.returnCode) {
+                Mqtt3ConnAckReturnCode.BAD_USER_NAME_OR_PASSWORD, Mqtt3ConnAckReturnCode.NOT_AUTHORIZED ->
+                    throw NotAuthorizedException
+
+                else -> {
+                    throw ConnectionException(e)
+                }
+            }
+        }
 
         coroutineScope.launch {
             delay(maximumConnectionDuration)
