@@ -20,5 +20,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Filament Manager Loader"
+rootProject.name = "Filament Manager"
 include(":app")
