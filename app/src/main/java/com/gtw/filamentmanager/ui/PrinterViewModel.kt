@@ -15,6 +15,7 @@ import com.gtw.filamentmanager.model.domain.TrayLocation
 import com.gtw.filamentmanager.model.repos.ConnectedPrinter
 import com.gtw.filamentmanager.model.repos.FilamentTraysUpdate
 import com.gtw.filamentmanager.model.repos.FilamentTraysUpdateError
+import com.gtw.filamentmanager.model.repos.NotAuthorizedException
 import com.gtw.filamentmanager.model.repos.PrinterAuthenticationDetailsRepo
 import com.gtw.filamentmanager.model.repos.PrinterConnector
 import com.gtw.filamentmanager.model.repos.PrinterDisconnected
@@ -154,40 +155,53 @@ class PrinterViewModel @Inject constructor(
         _state.update { it.copy(connectedPrintersAwaitingRefresh = it.connectedPrintersAwaitingRefresh + printer) }
         getAuthenticationDetails(printer)?.let { authenticationDetails ->
             viewModelScope.launch {
-                printerConnector.connectPrinter(
-                    printer = printer,
-                    printerAuthenticationDetails = authenticationDetails
-                ).also { connectedPrinter ->
-                    _state.update { it.copy(connectedPrinters = it.connectedPrinters + (printer to connectedPrinter)) }
-                }.apply {
-                    launch {
-                        events.transformWhile({ event ->
-                            emit(event)
-                            event !is PrinterDisconnected
-                        }).collect { event ->
-                            when (event) {
-                                is FilamentTraysUpdate -> {
-                                    updateFilamentTrays(
-                                        printer,
-                                        PrinterFilamentTrays(
-                                            externalSpool = event.trays.firstOrNull { it.location == ExternalSpool },
-                                            ams = event.trays.filter { it.location is AMS }
+                try {
+                    printerConnector.connectPrinter(
+                        printer = printer,
+                        printerAuthenticationDetails = authenticationDetails
+                    ).also { connectedPrinter ->
+                        _state.update { it.copy(connectedPrinters = it.connectedPrinters + (printer to connectedPrinter)) }
+                    }.apply {
+                        launch {
+                            events.transformWhile({ event ->
+                                emit(event)
+                                event !is PrinterDisconnected
+                            }).collect { event ->
+                                when (event) {
+                                    is FilamentTraysUpdate -> {
+                                        updateFilamentTrays(
+                                            printer,
+                                            PrinterFilamentTrays(
+                                                externalSpool = event.trays.firstOrNull { it.location == ExternalSpool },
+                                                ams = event.trays.filter { it.location is AMS }
+                                            )
                                         )
-                                    )
-                                    _state.update { it.copy(connectedPrintersAwaitingRefresh = it.connectedPrintersAwaitingRefresh - printer) }
-                                }
+                                        _state.update { it.copy(connectedPrintersAwaitingRefresh = it.connectedPrintersAwaitingRefresh - printer) }
+                                    }
 
-                                is FilamentTraysUpdateError -> displayMessage("Error updating filament tray data")
-                                is PrinterDisconnected -> _state.update {
-                                    _state.value.copy(
-                                        connectedPrinters = _state.value.connectedPrinters - printer
-                                    )
+                                    is FilamentTraysUpdateError -> displayMessage("Error updating filament tray data")
+
+                                    is PrinterDisconnected -> {
+                                        _state.update {
+                                            it.copy(
+                                                connectedPrinters = it.connectedPrinters - printer,
+                                                connectedPrintersAwaitingRefresh = it.connectedPrintersAwaitingRefresh - printer
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }
+                        requestAllPrinterData()
+                        onConnected()
                     }
-                    requestAllPrinterData()
-                    onConnected()
+                } catch (_: NotAuthorizedException) {
+                    displayMessage("Access code is incorrect")
+                    _state.update {
+                        _state.value.copy(
+                            accessCodeIsRequired = AccessCodeIsRequired(printer)
+                        )
+                    }
                 }
             }
         } ?: _state.run {

@@ -16,6 +16,15 @@ data object FilamentTraysUpdateError : BambuPrinterEvent
 
 object PrinterDisconnected : BambuPrinterEvent
 
+abstract class PrinterConnectionException(message: String? = null) : Exception(message)
+
+object NotAuthorizedException : PrinterConnectionException("Not authorized to connect") {
+    private fun readResolve(): Any = NotAuthorizedException
+}
+
+data class ConnectionException(val originalException: Exception) :
+    PrinterConnectionException("Error connecting to printer: ${originalException.message}")
+
 interface ConnectedPrinter {
     val events: Flow<BambuPrinterEvent>
     suspend fun requestAllPrinterData()
