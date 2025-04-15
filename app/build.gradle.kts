@@ -7,6 +7,46 @@ plugins {
     alias(libs.plugins.android.hilt)
 }
 
+fun getVersionNameFromGit(): String {
+    return try {
+        val process = ProcessBuilder("git", "tag", "--points-at", "HEAD")
+            .redirectOutput(ProcessBuilder.Redirect.PIPE)
+            .redirectError(ProcessBuilder.Redirect.PIPE)
+            .start()
+
+        process.waitFor(10, TimeUnit.SECONDS)
+        process.inputStream.bufferedReader().readText().trim()
+    } catch (_: Exception) {
+        "1.0.0" // Default fallback if git command fails
+    }.trim().let {
+        if (it.isEmpty()) {
+            val process = ProcessBuilder("git", "rev-parse", "--short", "HEAD")
+                .redirectOutput(ProcessBuilder.Redirect.PIPE)
+                .redirectError(ProcessBuilder.Redirect.PIPE)
+                .start()
+            process.waitFor(10, TimeUnit.SECONDS)
+            process.inputStream.bufferedReader().readText().trim()
+        } else {
+            it
+        }
+
+    }
+}
+
+fun getVersionCodeFromGit(): Int {
+    return try {
+        val process = ProcessBuilder("git", "rev-list", "--count", "HEAD")
+            .redirectOutput(ProcessBuilder.Redirect.PIPE)
+            .redirectError(ProcessBuilder.Redirect.PIPE)
+            .start()
+
+        process.waitFor(10, TimeUnit.SECONDS)
+        process.inputStream.bufferedReader().readText().trim().toInt()
+    } catch (_: Exception) {
+        1 // Default fallback if git command fails
+    }
+}
+
 android {
     namespace = "com.gtw.filamentmanager"
     compileSdk = 35
@@ -15,10 +55,21 @@ android {
         applicationId = "com.gtw.filamentmanager"
         minSdk = 35
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = getVersionCodeFromGit()
+        versionName = getVersionNameFromGit()
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    applicationVariants.all {
+        val variant = this
+        outputs.map { it as com.android.build.gradle.internal.api.BaseVariantOutputImpl }
+            .forEach { output ->
+                val projectName = rootProject.name
+                val outputFileName =
+                    "${projectName.replace(" ", "_")}-${variant.name}-${variant.versionName}.apk"
+                output.outputFileName = outputFileName
+            }
     }
 
     buildTypes {
