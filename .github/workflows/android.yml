@@ -15,8 +15,8 @@ jobs:
     - name: set up JDK 11
       uses: actions/setup-java@v4
       with:
-        java-version: '11'
-        distribution: 'temurin'
+        java-version: '21.0.5b792.48'
+        distribution: 'jetbrains'
         cache: gradle
 
     - name: Grant execute permission for gradlew
