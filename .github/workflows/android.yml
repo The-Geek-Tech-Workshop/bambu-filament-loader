@@ -12,10 +12,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: set up JDK 11
+    - name: set up JDK
       uses: actions/setup-java@v4
       with:
-        java-version: '21.0.5b792.48'
+        java-version: '21.0.5'
         distribution: 'jetbrains'
         cache: gradle
 
