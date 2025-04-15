@@ -26,5 +26,5 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: my-artifact
+        name: filament_manager
         path: app/build/outputs/apk/debug/Filament_Manager-*-*.apk
