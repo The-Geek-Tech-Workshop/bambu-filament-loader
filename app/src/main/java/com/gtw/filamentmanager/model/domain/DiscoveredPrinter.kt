@@ -22,7 +22,6 @@ object InetAddressSerializer : KSerializer<InetAddress> {
     }
 }
 
-
 @Serializable
 data class DiscoveredPrinter(
     val model: PrinterModel,

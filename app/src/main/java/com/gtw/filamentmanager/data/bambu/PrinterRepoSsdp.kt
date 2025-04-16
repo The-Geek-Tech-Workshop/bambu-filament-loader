@@ -88,7 +88,7 @@ class PrinterRepoSsdp @Inject constructor() : PrinterRepo {
                             val printer = DiscoveredPrinter(
                                 name = name,
                                 model = model.let {
-                                    PrinterModel.Companion.fromCode(
+                                    PrinterModel.Companion.fromBambuCode(
                                         it
                                     )
                                 },

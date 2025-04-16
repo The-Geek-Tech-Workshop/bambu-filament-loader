@@ -29,7 +29,10 @@ fun PrinterCard(
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(8.dp)) {
             Column(modifier = Modifier.weight(5f)) {
                 Text(printer.name, style = MaterialTheme.typography.titleMedium)
-                Text(printer.model.modelName, style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    "${printer.model.make.name} - ${printer.model.modelName}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
             }
             Icon(
                 Icons.AutoMirrored.Filled.ArrowForward,
