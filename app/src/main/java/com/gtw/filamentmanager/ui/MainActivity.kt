@@ -233,6 +233,7 @@ class MainActivity : ComponentActivity() {
                         onDismiss = {
                             viewModel.accessCodeRequestDismissed()
                             viewModel.setSelectedPrinter(null)
+                            navController.popBackStack(PrinterList, inclusive = false)
                         },
                         onConfirm = { accessCode ->
                             viewModel.updateAccessCodeForPrinter(

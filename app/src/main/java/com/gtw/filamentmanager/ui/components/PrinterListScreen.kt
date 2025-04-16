@@ -33,7 +33,6 @@ fun PrinterListScreen(
         isRefreshing = isRefreshing,
         onRefresh = onRefresh,
         modifier = modifier.fillMaxSize(),
-//        contentAlignment = Alignment.Center
     ) {
         if (discoveredPrinters.isEmpty() && !isRefreshing) {
             Column(
