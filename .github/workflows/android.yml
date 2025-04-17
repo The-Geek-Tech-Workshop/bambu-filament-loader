@@ -3,7 +3,7 @@ name: Android CI
 on:
   pull_request:
   release:
-    types: [published]
+    types: [ published ]
 
 jobs:
   build:
@@ -11,20 +11,32 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: set up JDK
-      uses: actions/setup-java@v4
-      with:
-        java-version: '21.0.5'
-        distribution: 'jetbrains'
-        cache: gradle
+      - uses: actions/checkout@v4
+      - name: set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21.0.5'
+          distribution: 'jetbrains'
+          cache: gradle
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-    - name: Build with Gradle
-      run: ./gradlew assembleDebug
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
 
-    - uses: actions/upload-artifact@v4
-      with:
-        name: filament_manager
-        path: app/build/outputs/apk/debug/Filament_Manager-*-*.apk
+      - name: Run tests
+        run: ./gradlew test
+
+      - name: Upload failed test report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test_report
+          path: |
+            **/build/reports/tests/
+
+      - name: Build apk
+        run: ./gradlew assembleDebug
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: filament_manager
+          path: app/build/outputs/apk/debug/Filament_Manager-*-*.apk
