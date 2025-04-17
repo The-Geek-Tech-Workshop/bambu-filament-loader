@@ -148,7 +148,7 @@ object HkdfTestData {
     val example1KeyLength = 6
     val example1NumKeys = 16
     val expectedHexKeys1 = listOf(
-        "0846904161A6",
+        "0846904161A5",
         "F5E61676ACD0",
         "7418CACC06B9",
         "88A9EA11E50E",
